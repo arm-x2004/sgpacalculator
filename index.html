@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPA Calculator - ECE VTU 2022</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/party-js@2.2.0/dist/party.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e3a8a, #172554);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            background-size: 200% 200%;
+            animation: waveAnimation 5s ease infinite;
+        }
+
+        @keyframes waveAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        header {
+            background-color: rgba(220, 38, 38, 0.9);
+            padding: 1.5rem 0;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 3px 7px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            margin: 0;
+            color: #f5f5f5;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            color: #e0f2fe;
+            font-size: 0.95rem;
+            font-weight: 400;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 950px;
+            width: 100%;
+            padding: 2.5rem;
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .container:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.6);
+        }
+
+        label {
+            display: block;
+            margin: 1rem 0 0.75rem;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.05rem;
+            opacity: 0.9;
+            transition: color 0.3s ease;
+        }
+
+        label:hover {
+            color: #a5d1de;
+        }
+
+        select, input[type="number"] {
+            padding: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            margin: 0.5rem 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            backdrop-filter: blur(7px);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #a5d1de;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            background-color: rgba(165, 209, 222, 0.05);
+        }
+
+        button {
+            background-color: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+            border: 2px solid #b91c1c;
+        }
+
+        button:hover {
+            background-color: #c81e1e;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.4);
+            border-color: #b11515;
+        }
+
+        button:active {
+            background-color: #b11515;
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border-color: #b11515;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2.5rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th, td {
+            padding: 1.2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0f7fa;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        th {
+            background-color: rgba(220, 38, 38, 0.08);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.95;
+        }
+
+        td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        #result {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 1.5rem;
+            color: #ffb81c;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 1.2rem;
+            font-size: 0.9rem;
+            text-align: center;
+            color: #b0f2e0;
+            opacity: 0.8;
+            transition: color 0.3s ease;
+        }
+
+        footer:hover {
+            color: #e0f7fa;
+        }
+
+        .semester-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .semester-button{
+            background-color: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0 0.5rem 0.5rem 0.5rem;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+            border: 2px solid #b91c1c;
+        }
+        .semester-button:hover {
+            background-color: #c81e1e;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.4);
+            border-color: #b11515;
+        }
+
+        .semester-button:active {
+            background-color: #b11515;
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border-color: #b11515;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SGPA Calculator</h1>
+        <p>For Electronics and Communication Engineering - VTU Scheme 2022</p>
+    </header>
+
+    <div class="container">
+        <div class="semester-buttons">
+            <button class = "semester-button" onclick="loadSubjects(1)">Semester 1</button>
+            <button class = "semester-button" onclick="loadSubjects(2)">Semester 2</button>
+            <button class = "semester-button" onclick="loadSubjects(3)">Semester 3</button>
+            <button class = "semester-button" onclick="loadSubjects(4)">Semester 4</button>
+            <button class = "semester-button" onclick="loadSubjects(5)">Semester 5</button>
+            <button class = "semester-button" onclick="loadSubjects(6)">Semester 6</button>
+            <button class = "semester-button" onclick="loadSubjects(7)">Semester 7</button>
+            <button class = "semester-button" onclick="loadSubjects(8)">Semester 8</button>
+        </div>
+
+        <form id="marksForm" onsubmit="calculateSGPA(event)">
+            <table id="subjectsTable">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Credits</th>
+                        <th>Internal</th>
+                        <th>External</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <input type="hidden" id="semester">
+            <button type="submit">Calculate SGPA</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <footer>
+        &copy; 2025 SGPA Tool for ECE VTU Scheme 2022
+    </footer>
+
+    <script>
+        const subjectsData = {
+            1: [
+                { code: "BMATE101", name: "MATHEMATICS FOR EES-I", credits: 4 },
+                { code: "BPHYE102", name: "PHYSICS FOR EEE STREAM", credits: 4 },
+                { code: "BBEE103", name: "BASIC ELECTRONICS", credits: 3 },
+                { code: "BENGK106", name: "COMMUNICATIVE ENGLISH", credits: 1 },
+                { code: "BICOK107", name: "INDIAN CONSTITUTION", credits: 1 },
+                { code: "BSFHK158", name: "SCIENTIFIC FOUNDATIONS OF HEALTH", credits: 1},
+                { code: "BPLCK105B", name: "INTRODUCTION TO PYTHON PROGRAMMING",credits:3},
+                { code: "BESCK104D", name: "INTRODUCTION MECHANICAL ENGINERRING",credits:3},
+            ],
+            2: [
+                { code: "BMATE201", name: "MATHEMATICS-II FOR EES", credits: 4 },
+                { code: "BCHEE202", name: "CHEMISTRY FOR EES", credits: 4 },
+                { code: "BCEDK203", name: "COMPUTER-AIDED ENGINEERING DRAWING", credits:3 },
+                { code: "BPWSK206", name: "PROFESSSIONAL WRITING SKILLS IN ENGLISH",credits:1 },
+                { code: "BKSKK258", name: "SAMSKRUTIKA KANNADA", credits: 1 },
+                { code: "BIDTK258", name: "INNOVATION AND DESIGN THINKING", credits: 1 },
+                { code: "BESCK204A", name: "INTRODUCTION TO CIVIL ENGINEERING", credits: 3 },
+                { code: "BETCK205E", name: "RENEWABLE ENERGY SOURCES", credits: 3 }
+            ],
+            3: [
+                { code: "BMATEC301", name: "Engineering Mathematics-III", credits: 3 },
+                { code: "BEC302", name: "DIGITAL SYSTEM DESIGN USING VERILOG", credits: 4},
+                { code: "BEC303", name: "ELECTRONIC PRINCIPLES AND CIRCUITS", credits: 4 },
+                { code: "BEC304", name: "NETWORK ANALYSIS", credits: 3 },
+                { code: "BECL305", name: "ANALOG AND DIGITAL SYSTEMS DESIGN LAB", credits: 1 },
+                { code: "BESCK307", name: "SOCIAL CONNECT AND RESPONSIBILITY", credits: 1 },
+                { code: "BYOK359", name: "YOGA", credits: 0 },
+                { code: "BEC358A", name: "LABVIEW PROGRAMMING", credits: 1 },
+                { code: "BEC306C", name: "COMPUTER ORGANIZATION AND ARCHITECTURE", credits: 3 }
+            ],
+            4: [
+                { code: "BEC401", name: "ELECTROMAGNETICS THEORY", credits: 3 },
+                { code: "BEC402", name: "PRINCIPLES OF COMMUNICATION SYSTEM", credits:4 },
+                { code: "BEC403", name: "CONTROL SYSTEMS", credits: 4 },
+                { code: "BECL404", name: "COMMUNICATION LAB", credits: 1 },
+                { code: "BEC405A", name: "MICROCONTROLLERS", credits: 3 },
+                { code: "BECL456A", name: "MICROCONTROLLERS LAB", credits: 1 },
+                { code: "BBOK407", name: "BIOLOGY FOR ENGINEERS", credits: 3 },
+                { code: "BUHK408", name: "UNIVERSAL HUMAN VALUES", credits: 1 },
+		        { code: "BYOK459", name: "YOGA", credits: 0 }
+            ],
+            5: [
+                { code: "BEC501", name: "TIME", credits: 3 },
+                { code: "BEC502", name: "DIGITAL SIGNAL PROCESSING", credits: 4 },
+                { code: "BEC503", name: "DIGITAL COMMUNICATION", credits: 4 },
+                { code: "BECL504", name: "DIGITAL COMMUNICATION LAB", credits: 1 },
+                { code: "BEC586", name: "MINI PROJECT", credits: 1 },
+		        { code: "BRMK557", name: "RESEARCH METHODOLOGY AND IPR", credits: 3 },
+		        { code: "BESCK508", name: "ENVIRONMENTAL STUDIES", credits: 2 },
+		        { code: "BNSK559", name: "NATIONAL SERVICE SCHEME", credits: 1 },
+		        { code: "BEC515B", name: "DIGITAL FINITE SWITCHING AUTOMATA THEORY", credits: 3 },
+            ],
+            6: [
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 2 }
+            ],
+            7: [
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 2 }
+            ],
+            8: [
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 3 },
+                { code: "", name: "", credits: 2 }
+            ],
+        };
+
+        function loadSubjects(semester) {
+            const sem = semester;
+            const tbody = document.querySelector("#subjectsTable tbody");
+            tbody.innerHTML = "";
+
+            if (!subjectsData[sem]) {
+                tbody.innerHTML = "<tr><td colspan='5'>No data available for this semester.</td></tr>";
+                return;
+            }
+
+            subjectsData[sem].forEach((subj, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${subj.code}</td>
+                    <td>${subj.name}</td>
+                    <td>${subj.credits}</td>
+                    <td><input type="number" min="0" max="50" name="internal${index}" required></td>
+                    <td><input type="number" min="0" max="50" name="external${index}" required></td>
+                `;
+                tbody.appendChild(row);
+            });
+             document.getElementById("semester").value = semester;
+        }
+
+        function calculateSGPA(event) {
+            event.preventDefault();
+            const sem = document.getElementById("semester").value; // Corrected line
+            const subjects = subjectsData[sem];
+            let totalCredits = 0, totalWeightedPoints = 0;
+
+            if (!subjects) {
+                document.getElementById("result").innerHTML = "<h3>No data available to calculate SGPA.</h3>";
+                return;
+            }
+
+            subjects.forEach((subj, index) => {
+                const internal = parseInt(document.querySelector(`[name='internal${index}']`).value);
+                const external = parseInt(document.querySelector(`[name='external${index}']`).value);
+                const total = internal + external;
+
+                let gradePoint = 0;
+                if (total >= 90) gradePoint = 10;
+                else if (total >= 80) gradePoint = 9;
+                else if (total >= 70) gradePoint = 8;
+                else if (total >= 60) gradePoint = 7;
+                else if (total >= 50) gradePoint = 6;
+                else if (total >= 40) gradePoint = 5;
+                else gradePoint = 0;
+
+                totalCredits += subj.credits;
+                totalWeightedPoints += gradePoint * subj.credits;
+            });
+
+            const sgpa = (totalWeightedPoints / totalCredits).toFixed(2);
+            document.getElementById("result").innerHTML = `<h3>Your SGPA: ${sgpa}</h3>`;
+
+            if (sgpa > 9) {
+                party.confetti(document.getElementById("result"), {
+                    count: 200,
+                    spread: 70,
+                    origin: { x: 0.5, y: 0.5 },
+                    duration: 2000,
+                });
+            } else if (sgpa > 8) {
+                party.sparkles(document.getElementById("result"), {
+                    count: 100,
+                    overlap: 20,
+                    speed: 0.8,
+                    size: 8,
+                });
+            }
+        }
+    </script>
+</body>
+</html>
