@@ -200,28 +200,63 @@
   const sgpaResult = document.getElementById('sgpaResult');
 
   const semestersData = {
-    1: [
-      { code: "BMATE101", name: "MATHEMATICS FOR EES-I", credits: 4 },
-      { code: "BPHYE102", name: "PHYSICS FOR EEE STREAM", credits: 4 },
-      { code: "BBEE103", name: "BASIC ELECTRONICS", credits: 3 },
-      { code: "BENGK106", name: "COMMUNICATIVE ENGLISH", credits: 1 },
-      { code: "BICOK107", name: "INDIAN CONSTITUTION", credits: 1 },
-      { code: "BSFHK158", name: "SCIENTIFIC FOUNDATIONS OF HEALTH", credits: 1 },
-      { code: "BPLCK105B", name: "INTRODUCTION TO PYTHON PROGRAMMING", credits: 3 },
-      { code: "BESCK104D", name: "INTRODUCTION TO MECHANICAL ENGINEERING", credits: 3 }
-    ],
-    2: [
-      { code: "BMATE201", name: "MATHEMATICS-II FOR EES", credits: 4 },
-      { code: "BCHEE202", name: "CHEMISTRY FOR EES", credits: 4 },
-      { code: "BCEDK203", name: "COMPUTER-AIDED ENGINEERING DRAWING", credits: 3 },
-      { code: "BPWSK206", name: "PROFESSIONAL WRITING SKILLS IN ENGLISH", credits: 1 },
-      { code: "BELEX205", name: "ENGINEERING MECHANICS", credits: 3 },
-      { code: "BICOK207", name: "INDIAN CONSTITUTION", credits: 1 },
-      { code: "BCSEK208", name: "PROBLEM SOLVING USING C", credits: 3 },
-      { code: "BECYK204", name: "ELECTRICAL CIRCUITS & NETWORKS", credits: 3 }
-    ],
-    // Add semesters 3 to 8 similarly
-  };
+  1: [
+    { code: "BMATE101", name: "MATHEMATICS FOR EES-I", credits: 4 },
+    { code: "BPHYE102", name: "PHYSICS FOR EEE STREAM", credits: 4 },
+    { code: "BBEE103", name: "BASIC ELECTRONICS", credits: 3 },
+    { code: "BENGK106", name: "COMMUNICATIVE ENGLISH", credits: 1 },
+    { code: "BICOK107", name: "INDIAN CONSTITUTION", credits: 1 },
+    { code: "BSFHK158", name: "SCIENTIFIC FOUNDATIONS OF HEALTH", credits: 1 },
+    { code: "BPLCK105B", name: "INTRODUCTION TO PYTHON PROGRAMMING", credits: 3 },
+    { code: "BESCK104D", name: "INTRODUCTION TO MECHANICAL ENGINEERING", credits: 3 }
+  ],
+  2: [
+    { code: "BMATE201", name: "MATHEMATICS-II FOR EES", credits: 4 },
+    { code: "BCHEE202", name: "CHEMISTRY FOR EES", credits: 4 },
+    { code: "BCEDK203", name: "COMPUTER-AIDED ENGINEERING DRAWING", credits: 3 },
+    { code: "BPWSK206", name: "PROFESSIONAL WRITING SKILLS IN ENGLISH", credits: 1 },
+    { code: "BKSKK258", name: "SAMSKRUTIKA KANNADA", credits: 1 },
+    { code: "BIDTK258", name: "INNOVATION AND DESIGN THINKING", credits: 1 },
+    { code: "BESCK204A", name: "INTRODUCTION TO CIVIL ENGINEERING", credits: 3 },
+    { code: "BETCK205E", name: "RENEWABLE ENERGY SOURCES", credits: 3 }
+  ],
+  3: [
+    { code: "BMATEC301", name: "AV MATHEMATICS-III FOR EC ENGINEERING", credits: 3 },
+    { code: "BEC302", name: "DIGITAL SYSTEM DESIGN USING VERILOG", credits: 4 },
+    { code: "BEC303", name: "ELECTRONIC PRINCIPLES AND CIRCUITS", credits: 4 },
+    { code: "BEC304", name: "NETWORK ANALYSIS", credits: 3 },
+    { code: "BECL305", name: "ANALOG AND DIGITAL SYSTEMS DESIGN LAB", credits: 1 },
+    { code: "BESCK307", name: "SOCIAL CONNECT AND RESPONSIBILITY", credits: 1 },
+    { code: "BYOK359", name: "YOGA", credits: 0 },
+    { code: "BEC358A", name: "LABVIEW PROGRAMMING", credits: 1 },
+    { code: "BEC306C", name: "COMPUTER ORGANIZATION AND ARCHITECTURE", credits: 3 }
+  ],
+  4: [
+    { code: "BEC401", name: "ELECTROMAGNETICS THEORY", credits: 3 },
+    { code: "BEC402", name: "PRINCIPLES OF COMMUNICATION SYSTEM", credits: 4 },
+    { code: "BEC403", name: "CONTROL SYSTEMS", credits: 4 },
+    { code: "BECL404", name: "COMMUNICATION LAB", credits: 1 },
+    { code: "BEC405A", name: "MICROCONTROLLERS", credits: 3 },
+    { code: "BECL456A", name: "MICROCONTROLLERS LAB", credits: 1 },
+    { code: "BBOK407", name: "BIOLOGY FOR ENGINEERS", credits: 3 },
+    { code: "BUHK408", name: "UNIVERSAL HUMAN VALUES", credits: 1 },
+    { code: "BYOK459", name: "YOGA", credits: 0 }
+  ],
+  5: [
+    { code: "BEC501", name: "TIME", credits: 3 },
+    { code: "BEC502", name: "DIGITAL SIGNAL PROCESSING", credits: 4 },
+    { code: "BEC503", name: "DIGITAL COMMUNICATION", credits: 4 },
+    { code: "BECL504", name: "DIGITAL COMMUNICATION LAB", credits: 1 },
+    { code: "BEC586", name: "MINI PROJECT", credits: 1 },
+    { code: "BRMK557", name: "RESEARCH METHODOLOGY AND IPR", credits: 3 },
+    { code: "BESK508", name: "ENVIRONMENTAL STUDIES", credits: 2 },
+    { code: "BNSK559", name: "NATIONAL SERVICE SCHEME", credits: 1 },
+    { code: "BEC515B", name: "DSFAT", credits: 3 }
+  ],
+  6: [],
+  7: [],
+  8: []
+};
 
   function loadSemesterSubjects(sem) {
     tbody.innerHTML = '';
