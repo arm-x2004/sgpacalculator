@@ -1,525 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VTU ECE 2022 CGPA Calculator</title>
-  <style>
-    :root {
-      --primary: #3f51b5;
-      --accent: #e91e63;
-      --light-bg: #fff;
-      --dark-bg: #121212;
-      --light-text: #000;
-      --dark-text: #fff;
-      --card-light: #fff;
-      --card-dark: #1e1e1e;
-    }
-
-    /* Base styles */
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--light-bg);
-      color: var(--light-text);
-      transition: background-color 0.3s, color 0.3s;
-      overflow-x: hidden;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    body.dark {
-      background-color: var(--dark-bg);
-      color: var(--dark-text);
-    }
-
-    .container {
-      max-width: 1000px;
-      width: 90%;
-      margin: 30px auto 60px;
-      flex-grow: 1;
-    }
-
-    h1#welcomeText {
-      background-color: white;
-      padding: 40px 30px;
-      margin-top: 150px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 3.2rem;
-      color: var(--primary);
-      text-align: center;
-      user-select: none;
-      transition: color 0.3s ease;
-      max-width: 600px;
-      line-height: 1.2;
-    }
-
-    body.dark h1#welcomeText {
-      background-color: transparent;
-      color: var(--primary);
-    }
-
-    /* Semester buttons container */
-    .sem-buttons {
-      text-align: center;
-      margin-bottom: 25px;
-      opacity: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: opacity 0.6s ease, max-height 0.6s ease;
-    }
-
-    .sem-buttons.visible {
-      opacity: 1;
-      max-height: 200px;
-      margin-top: 30px;
-    }
-
-    /* Capsule shaped buttons */
-    .sem-button {
-      display: inline-block;
-      background-color: var(--primary);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 999px;
-      border: none;
-      margin: 5px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: background-color 0.3s;
-      user-select: none;
-    }
-
-    .sem-button:hover {
-      background-color: var(--accent);
-    }
-
-    .sem-button.active {
-      background-color: var(--accent);
-    }
-
-    /* Table styles */
-    .subject-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-      opacity: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: opacity 0.6s ease, max-height 0.6s ease;
-    }
-
-    .subject-table.visible {
-      opacity: 1;
-      max-height: 1000px;
-    }
-
-    .subject-table th,
-    .subject-table td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-      background-color: var(--card-light);
-      color: var(--light-text);
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .subject-table th:nth-child(2),
-    .subject-table td:nth-child(2) {
-      text-align: left;
-      padding-left: 15px;
-    }
-
-    body.dark .subject-table th,
-    body.dark .subject-table td {
-      background-color: var(--card-dark);
-      color: var(--dark-text);
-    }
-
-    .result {
-      font-size: 1.4em;
-      text-align: center;
-      margin: 20px 0;
-      font-weight: bold;
-      opacity: 0;
-      max-height: 0;
-      transition: opacity 0.6s ease, max-height 0.6s ease;
-      user-select: none;
-    }
-
-    .result.visible {
-      opacity: 1;
-      max-height: 100px;
-    }
-
-    /* Calculate button */
-    #marksForm button[type="submit"] {
-      display: block;
-      margin: 0 auto;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 999px;
-      padding: 12px 30px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      user-select: none;
-    }
-
-    #marksForm button[type="submit"]:hover {
-      background-color: var(--accent);
-    }
-
-    /* Dark mode toggle button */
-    .dark-toggle {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--accent);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      z-index: 2000;
-      user-select: none;
-    }
-
-    /* Scroll to calculate message */
-    #scrollMessage {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--primary);
-      user-select: none;
-      opacity: 1;
-      transition: opacity 0.5s ease;
-      z-index: 500;
-    }
-
-    body.dark #scrollMessage {
-      color: var(--accent);
-    }
-
-    /* Exploding circle animation */
-    #expandingCircle {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background-color: red; /* dynamically changed in JS */
-      transform: translate(-50%, -50%) scale(0);
-      animation: explodeCircle 0.6s forwards ease-out;
-      pointer-events: none;
-      user-select: none;
-      opacity: 0.95;
-      z-index: 1500;
-      display: none;
-    }
-
-    @keyframes explodeCircle {
-      0% {
-        transform: translate(-50%, -50%) scale(0);
-        opacity: 0.95;
-      }
-      100% {
-        transform: translate(-50%, -50%) scale(100);
-        opacity: 0;
-      }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SGPA Calculator Simple Animation</title>
+<style>
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    background: #f5f0e6; /* vintage off-white */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #5b4a3c; /* warm dark brown */
+    overflow-x: hidden;
+  }
+  #welcomeScreen {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    background: #f5f0e6; /* consistent vintage off-white */
+  }
+  #welcomeScreen h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    z-index: 2;
+    font-weight: bold;
+    color: #5b4a3c; /* warm dark brown */
+  }
+  #circleCanvas {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  #mainContent {
+    display: none;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  #semButtons {
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  .sem-btn {
+    background: #b07a57; /* muted terracotta */
+    border: none;
+    border-radius: 25px;
+    color: #f5f0e6;
+    padding: 12px 28px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin: 6px;
+    transition: background-color 0.3s;
+    font-weight: bold;
+  }
+  .sem-btn:hover {
+    background: #8b5e3c; /* deeper brown */
+  }
+  table {
+    margin: 0 auto 20px auto;
+    border-collapse: collapse;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 0 10px rgba(86, 68, 51, 0.15);
+  }
+  th, td {
+    border: 1px solid #c4b8a9;
+    padding: 10px 15px;
+    text-align: center;
+    font-weight: bold;
+    color: #5b4a3c;
+  }
+  th {
+    background-color: #d6c8b8; /* soft beige */
+  }
+  input.marks-input {
+    width: 50px;
+    text-align: center;
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid #a48c74;
+    outline: none;
+    color: #5b4a3c;
+    background: #f9f6f0;
+  }
+  input.marks-input:focus {
+    border-color: #b07a57;
+    box-shadow: none; /* no glow */
+  }
+  #calculateBtn {
+    margin: 0 auto 10px auto;
+    background: #9b6f4e; /* muted warm brown */
+    color: #f5f0e6;
+    border: none;
+    padding: 12px 40px;
+    font-size: 1.3rem;
+    border-radius: 25px;
+    cursor: pointer;
+    display: block;
+    font-weight: bold;
+  }
+  #calculateBtn:hover {
+    background: #7e5c3c; /* darker brown */
+  }
+  #sgpaResult {
+    max-width: 900px;
+    margin: 0 auto 40px auto;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #5b4a3c;
+    text-align: center;
+    min-height: 2em;
+  }
+</style>
 </head>
 <body>
-  <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
 
-  <h1 id="welcomeText">Welcome to SGPA Calculator</h1>
+<div id="welcomeScreen">
+  <h1>Welcome to SGPA Calculator</h1>
+  <canvas id="circleCanvas" width="200" height="200"></canvas>
+</div>
 
-  <div id="expandingCircle"></div>
-
-  <div class="container">
-    <div class="sem-buttons" id="semButtons">
-      <button class="sem-button" onclick="loadSemester(1)">Sem 1</button>
-      <button class="sem-button" onclick="loadSemester(2)">Sem 2</button>
-      <button class="sem-button" onclick="loadSemester(3)">Sem 3</button>
-      <button class="sem-button" onclick="loadSemester(4)">Sem 4</button>
-      <button class="sem-button" onclick="loadSemester(5)">Sem 5</button>
-      <button class="sem-button" onclick="loadSemester(6)">Sem 6</button>
-      <button class="sem-button" onclick="loadSemester(7)">Sem 7</button>
-      <button class="sem-button" onclick="loadSemester(8)">Sem 8</button>
-    </div>
-
-    <form id="marksForm" onsubmit="event.preventDefault(); calculateSGPA();">
-      <table class="subject-table" id="subjectTable"></table>
-      <div class="result" id="resultDisplay"></div>
-      <button type="submit">Calculate SGPA</button>
-    </form>
+<div id="mainContent">
+  <div id="semButtons">
+    <button class="sem-btn" data-sem="1">Semester 1</button>
+    <button class="sem-btn" data-sem="2">Semester 2</button>
+    <button class="sem-btn" data-sem="3">Semester 3</button>
+    <button class="sem-btn" data-sem="4">Semester 4</button>
+    <button class="sem-btn" data-sem="5">Semester 5</button>
+    <button class="sem-btn" data-sem="6">Semester 6</button>
+    <button class="sem-btn" data-sem="7">Semester 7</button>
+    <button class="sem-btn" data-sem="8">Semester 8</button>
   </div>
+  
+  <table id="subjectTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Subject Code</th>
+        <th>Subject Name</th>
+        <th>Credits</th>
+        <th>Internal Marks (Max 50)</th>
+        <th>External Marks (Max 50)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  <div id="scrollMessage">Click anywhere to continue</div>
+  <button id="calculateBtn">Calculate SGPA</button>
+  <div id="sgpaResult"></div>
+</div>
 
-  <script>
-    // Semester subjects data, only sem 1 filled, others empty
-    const semesterData = {
-      1: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },
-      ],
-      2: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },], 
-        3: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },],
-        4: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },], 
-        5: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },], 
-        6: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },], 
-        7: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },], 
-        8: [
-        { code: "21MAT11", name: "Calculus and Differential Equations", credits: 3 },
-        { code: "21PHY12", name: "Engineering Physics", credits: 3 },
-        { code: "21ELE13", name: "Basic Electrical Engineering", credits: 3 },
-        { code: "21CIV14", name: "Elements of Civil Engineering", credits: 3 },
-        { code: "21EGH15", name: "Communicative English", credits: 2 },
-        { code: "21PHYL16", name: "Physics Lab", credits: 1 },
-        { code: "21ELEL17", name: "Electrical Lab", credits: 1 },
-        { code: "21EGH18", name: "English Lab", credits: 1 },]
-    };
+<script>
+  const canvas = document.getElementById('circleCanvas');
+  const ctx = canvas.getContext('2d');
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
 
-    // Grade point mapping function
-    const gradePoint = (total) => {
-      if (total >= 90) return 10;
-      if (total >= 80) return 9;
-      if (total >= 70) return 8;
-      if (total >= 60) return 7;
-      if (total >= 50) return 6;
-      if (total >= 40) return 5;
-      return 0;
-    };
+  // Vintage-inspired vibrant colors for the circle animation
+  const colors = ['#d95f02', '#7570b3', '#1b9e77', '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666'];
 
-    // DOM elements
-    const welcomeText = document.getElementById("welcomeText");
-    const semButtons = document.getElementById("semButtons");
-    const subjectTable = document.getElementById("subjectTable");
-    const resultDisplay = document.getElementById("resultDisplay");
-    const marksForm = document.getElementById("marksForm");
-    const scrollMessage = document.getElementById("scrollMessage");
-    const expandingCircle = document.getElementById("expandingCircle");
-    const semButtonElements = document.querySelectorAll(".sem-button");
+  // Animate a circle that expands fullscreen and then calls callback
+  function animateFullScreenCircle(callback) {
+    let radius = 0;
+    let maxRadius = Math.sqrt(window.innerWidth * window.innerWidth + window.innerHeight * window.innerHeight);
 
-    // For managing state of welcome text & visibility
-    let calcVisible = false;
+    let color = colors[Math.floor(Math.random() * colors.length)];
 
-    // Random colors for circle animation
-    const colors = ['#e91e63', '#ff5722', '#2196f3', '#9c27b0', '#4caf50', '#f44336', '#00bcd4'];
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      // No shadow/glow for smooth & classy look
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
 
-    // Load semester subjects into table
-    function loadSemester(sem) {
-      // Set active button
-      semButtonElements.forEach(btn => btn.classList.remove("active"));
-      semButtonElements[sem - 1].classList.add("active");
+      radius += 20;
 
-      const subjects = semesterData[sem];
-      if (!subjects || subjects.length === 0) {
-        subjectTable.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">No data available for Semester ${sem}.</td></tr>`;
-        resultDisplay.classList.remove("visible");
-        subjectTable.classList.add("visible");
+      if (radius > maxRadius) {
+        cancelAnimationFrame(animId);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(callback) callback();
         return;
       }
 
-      let html = `<thead>
-        <tr>
-          <th>Code</th>
-          <th style="text-align:left;">Subject</th>
-          <th>Credits</th>
-          <th>Internal (50)</th>
-          <th>External (50)</th>
-          <th>Total (100)</th>
-        </tr>
-      </thead><tbody>`;
+      animId = requestAnimationFrame(draw);
+    }
+    let animId = requestAnimationFrame(draw);
+  }
 
-      subjects.forEach((sub, i) => {
-        html += `<tr>
-          <td>${sub.code}</td>
-          <td style="text-align:left;">${sub.name}</td>
-          <td>${sub.credits}</td>
-          <td><input type="number" min="0" max="50" value="0" required id="internal${i}" /></td>
-          <td><input type="number" min="0" max="50" value="0" required id="external${i}" /></td>
-          <td id="total${i}">0</td>
-        </tr>`;
-      });
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  const mainContent = document.getElementById('mainContent');
+  const semButtons = document.querySelectorAll('.sem-btn');
+  const subjectTable = document.getElementById('subjectTable');
+  const tbody = subjectTable.querySelector('tbody');
+  const calculateBtn = document.getElementById('calculateBtn');
+  const sgpaResult = document.getElementById('sgpaResult');
 
-      html += "</tbody>";
-      subjectTable.innerHTML = html;
-      subjectTable.classList.add("visible");
-      resultDisplay.classList.remove("visible");
+  // Dummy data for semesters (simplified)
+const semestersData = {
+  1: [
+    { code: "BMATE101", name: "MATHEMATICS FOR EES-I", credits: 4 },
+    { code: "BPHYE102", name: "PHYSICS FOR EEE STREAM", credits: 4 },
+    { code: "BBEE103", name: "BASIC ELECTRONICS", credits: 3 },
+    { code: "BENGK106", name: "COMMUNICATIVE ENGLISH", credits: 1 },
+    { code: "BICOK107", name: "INDIAN CONSTITUTION", credits: 1 },
+    { code: "BSFHK158", name: "SCIENTIFIC FOUNDATIONS OF HEALTH", credits: 1 },
+    { code: "BPLCK105B", name: "INTRODUCTION TO PYTHON PROGRAMMING", credits: 3 },
+    { code: "BESCK104D", name: "INTRODUCTION TO MECHANICAL ENGINEERING", credits: 3 }
+  ],
+  2: [
+    { code: "BMATE201", name: "MATHEMATICS-II FOR EES", credits: 4 },
+    { code: "BCHEE202", name: "CHEMISTRY FOR EES", credits: 4 },
+    { code: "BCEDK203", name: "COMPUTER-AIDED ENGINEERING DRAWING", credits: 3 },
+    { code: "BPWSK206", name: "PROFESSIONAL WRITING SKILLS IN ENGLISH", credits: 1 },
+    { code: "BELEX205", name: "ENGINEERING MECHANICS", credits: 3 },
+    { code: "BICOK207", name: "INDIAN CONSTITUTION", credits: 1 },
+    { code: "BCSEK208", name: "PROBLEM SOLVING USING C", credits: 3 },
+    { code: "BECYK204", name: "ELECTRICAL CIRCUITS & NETWORKS", credits: 3 }
+  ],
+  // Add semesters 3 to 8 similarly
+};
+
+  function loadSemesterSubjects(sem) {
+    tbody.innerHTML = '';
+    const subjects = semestersData[sem];
+    if(!subjects) {
+      subjectTable.style.display = 'none';
+      return;
+    }
+    subjects.forEach(subj => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${subj.code}</td>
+        <td>${subj.name}</td>
+        <td>${subj.credits}</td>
+        <td><input class="marks-input" type="number" min="0" max="50" value="0"></td>
+        <td><input class="marks-input" type="number" min="0" max="50" value="0"></td>
+      `;
+      tbody.appendChild(row);
+    });
+    subjectTable.style.display = 'table';
+  }
+
+  function calculateGradePoint(mark) {
+    if (mark >= 90) return 10;
+    if (mark >= 80) return 9;
+    if (mark >= 70) return 8;
+    if (mark >= 60) return 7;
+    if (mark >= 50) return 6;
+    if (mark >= 40) return 5;
+    return 0;
+  }
+
+  function calculateSGPA() {
+    const subjects = semestersData[currentSemester];
+    if(!subjects) return;
+
+    let totalCredits = 0;
+    let totalWeightedPoints = 0;
+
+    const rows = tbody.querySelectorAll('tr');
+
+    for(let i = 0; i < subjects.length; i++) {
+      const subject = subjects[i];
+      const internalMark = parseInt(rows[i].cells[3].querySelector('input').value) || 0;
+      const externalMark = parseInt(rows[i].cells[4].querySelector('input').value) || 0;
+
+      const totalMark = internalMark + externalMark;
+      const gradePoint = calculateGradePoint(totalMark);
+
+      totalCredits += subject.credits;
+      totalWeightedPoints += gradePoint * subject.credits;
     }
 
-    // Calculate SGPA based on inputs
-    function calculateSGPA() {
-      const activeSemBtn = document.querySelector(".sem-button.active");
-      if (!activeSemBtn) return alert("Please select a semester!");
-
-      const sem = parseInt(activeSemBtn.textContent.replace('Sem ', ''));
-      const subjects = semesterData[sem];
-      if (!subjects || subjects.length === 0) return;
-
-      let totalPoints = 0;
-      let totalCredits = 0;
-
-      for (let i = 0; i < subjects.length; i++) {
-        const internalInput = document.getElementById(`internal${i}`);
-        const externalInput = document.getElementById(`external${i}`);
-        const totalCell = document.getElementById(`total${i}`);
-
-        let internalMarks = parseInt(internalInput.value) || 0;
-        let externalMarks = parseInt(externalInput.value) || 0;
-
-        // Clamp values
-        internalMarks = Math.min(Math.max(internalMarks, 0), 50);
-        externalMarks = Math.min(Math.max(externalMarks, 0), 50);
-
-        const totalMarks = internalMarks + externalMarks;
-        totalCell.textContent = totalMarks;
-
-        const gp = gradePoint(totalMarks);
-
-        totalPoints += gp * subjects[i].credits;
-        totalCredits += subjects[i].credits;
-      }
-
-      const sgpa = (totalPoints / totalCredits).toFixed(2);
-
-      resultDisplay.textContent = `SGPA: ${sgpa}`;
-      resultDisplay.classList.add("visible");
+    if(totalCredits === 0) {
+      sgpaResult.textContent = "No subjects found to calculate SGPA.";
+      return;
     }
 
-    // Dark mode toggle
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark");
-      // Update welcome text background in light mode
-      if (document.body.classList.contains("dark")) {
-        welcomeText.style.backgroundColor = "transparent";
-      } else {
-        welcomeText.style.backgroundColor = "white";
-        welcomeText.style.color = "var(--primary)";
-      }
-    }
+    const sgpa = (totalWeightedPoints / totalCredits).toFixed(2);
+    sgpaResult.textContent = `Your SGPA for Semester ${currentSemester} is: ${sgpa}`;
+  }
 
-    // Show semester buttons and table with animation
-    function showCalculator() {
-      if (calcVisible) return;
-      calcVisible = true;
+  let currentSemester = 1;
 
-      // Hide scroll message
-      scrollMessage.style.opacity = '0';
+  semButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSemester = btn.dataset.sem;
+      loadSemesterSubjects(currentSemester);
+      sgpaResult.textContent = '';
+    });
+  });
 
-      // Pick random color for circle
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      expandingCircle.style.backgroundColor = color;
+  calculateBtn.addEventListener('click', calculateSGPA);
 
-      // Show circle and run animation
-      expandingCircle.style.display = 'block';
-      expandingCircle.style.animation = 'none'; // Reset animation
-      void expandingCircle.offsetWidth; // Trigger reflow
-      expandingCircle.style.animation = 'explodeCircle 0.6s forwards ease-out';
-
-      // Change welcome text color to white during animation
-      welcomeText.style.color = 'white';
-
-      // After animation ends (~600ms), show buttons and table
-      setTimeout(() => {
-        expandingCircle.style.display = 'none';
-        semButtons.classList.add("visible");
-        loadSemester(1);
-        marksForm.querySelector("button[type=submit]").style.display = 'inline-block';
-      }, 600);
-    }
-
-    // Detect scroll or click anywhere on page to trigger calculator
-    let scrollOrClickDetected = false;
-    function onScrollOrClick() {
-      if (!scrollOrClickDetected) {
-        scrollOrClickDetected = true;
-        showCalculator();
-      }
-    }
-
-    window.addEventListener('scroll', onScrollOrClick);
-    window.addEventListener('click', onScrollOrClick);
-    window.addEventListener('touchstart', onScrollOrClick);
-
-    // Initial setup: welcome text background for light mode
-    if (!document.body.classList.contains("dark")) {
-      welcomeText.style.backgroundColor = "white";
-      welcomeText.style.color = "var(--primary)";
-    }
-
-    // Initially hide submit button (show only after calc visible)
-    marksForm.querySelector("button[type=submit]").style.display = 'none';
-
-    // Set sem 1 button active by default for accessibility
-    semButtonElements[0].classList.add("active");
-  </script>
+  welcomeScreen.addEventListener('click', () => {
+    animateFullScreenCircle(() => {
+      welcomeScreen.style.display = 'none';
+      mainContent.style.display = 'block';
+    });
+  });
+</script>
 </body>
 </html>
