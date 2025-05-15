@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SGPA Calculator Simple Animation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>SGPA Calculator Mobile Friendly</title>
 <style>
   body, html {
     margin: 0; padding: 0; height: 100%;
-    background: #f5f0e6; /* vintage off-white */
+    background: #f5f0e6;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #5b4a3c; /* warm dark brown */
+    color: #5b4a3c;
     overflow-x: hidden;
   }
   #welcomeScreen {
@@ -22,14 +22,14 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    background: #f5f0e6; /* consistent vintage off-white */
+    background: #f5f0e6;
   }
   #welcomeScreen h1 {
     font-size: 3rem;
     margin-bottom: 20px;
     z-index: 2;
     font-weight: bold;
-    color: #5b4a3c; /* warm dark brown */
+    color: #5b4a3c;
   }
   #circleCanvas {
     position: absolute;
@@ -49,7 +49,7 @@
     text-align: center;
   }
   .sem-btn {
-    background: #b07a57; /* muted terracotta */
+    background: #b07a57;
     border: none;
     border-radius: 25px;
     color: #f5f0e6;
@@ -61,18 +61,27 @@
     font-weight: bold;
   }
   .sem-btn:hover {
-    background: #8b5e3c; /* deeper brown */
+    background: #8b5e3c;
   }
+
+  /* Important: Wrapper scroll container */
   #tableWrapper {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #c4b8a9;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    /* prevent container from shrinking */
+    display: block;
   }
+
+  /* Table forced minimum width for scrolling */
   table {
-    margin: 0 auto 20px auto;
     border-collapse: collapse;
-    width: 90%;
-    max-width: 800px;
+    width: 100%;
+    min-width: 720px; /* Force horizontal scroll if screen smaller */
     box-shadow: 0 0 10px rgba(86, 68, 51, 0.15);
+    margin: 0 auto;
   }
   th, td {
     border: 1px solid #c4b8a9;
@@ -80,9 +89,10 @@
     text-align: center;
     font-weight: bold;
     color: #5b4a3c;
+    white-space: nowrap; /* prevent breaking inside cells */
   }
   th {
-    background-color: #d6c8b8; /* soft beige */
+    background-color: #d6c8b8;
   }
   input.marks-input {
     width: 50px;
@@ -97,11 +107,11 @@
   }
   input.marks-input:focus {
     border-color: #b07a57;
-    box-shadow: none; /* no glow */
+    box-shadow: none;
   }
   #calculateBtn {
     margin: 0 auto 10px auto;
-    background: #9b6f4e; /* muted warm brown */
+    background: #9b6f4e;
     color: #f5f0e6;
     border: none;
     padding: 12px 40px;
@@ -112,7 +122,7 @@
     font-weight: bold;
   }
   #calculateBtn:hover {
-    background: #7e5c3c; /* darker brown */
+    background: #7e5c3c;
   }
   #sgpaResult {
     max-width: 900px;
@@ -122,6 +132,22 @@
     color: #5b4a3c;
     text-align: center;
     min-height: 2em;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 768px) {
+    #mainContent {
+      padding: 0 10px;
+    }
+    .sem-btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin: 4px;
+    }
+    input.marks-input {
+      width: 40px;
+      font-size: 0.9rem;
+    }
   }
 </style>
 </head>
@@ -144,7 +170,7 @@
     <button class="sem-btn" data-sem="8">Semester 8</button>
   </div>
   
-  <div id="tableWrapper" style="overflow-x:auto; -webkit-overflow-scrolling: touch;">
+  <div id="tableWrapper">
     <table id="subjectTable" style="display:none;">
       <thead>
         <tr>
@@ -164,26 +190,22 @@
 </div>
 
 <script>
+  // Your circle animation code (same as before)
   const canvas = document.getElementById('circleCanvas');
   const ctx = canvas.getContext('2d');
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
-
-  // Vintage-inspired vibrant colors for the circle animation
   const colors = ['#d95f02', '#7570b3', '#1b9e77', '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666'];
 
-  // Animate a circle that expands fullscreen and then calls callback
   function animateFullScreenCircle(callback) {
     let radius = 0;
-    let maxRadius = Math.sqrt(window.innerWidth * window.innerWidth + window.innerHeight * window.innerHeight);
-
+    let maxRadius = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2);
     let color = colors[Math.floor(Math.random() * colors.length)];
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.beginPath();
       ctx.fillStyle = color;
-      // No shadow/glow for smooth & classy look
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.fill();
 
@@ -195,7 +217,6 @@
         if(callback) callback();
         return;
       }
-
       animId = requestAnimationFrame(draw);
     }
     let animId = requestAnimationFrame(draw);
@@ -209,7 +230,6 @@
   const calculateBtn = document.getElementById('calculateBtn');
   const sgpaResult = document.getElementById('sgpaResult');
 
-  // Dummy data for semesters (simplified)
   const semestersData = {
     1: [
       { code: "BMATE101", name: "MATHEMATICS FOR EES-I", credits: 4 },
@@ -231,7 +251,6 @@
       { code: "BCSEK208", name: "PROBLEM SOLVING USING C", credits: 3 },
       { code: "BECYK204", name: "ELECTRICAL CIRCUITS & NETWORKS", credits: 3 }
     ],
-    // Add semesters 3 to 8 similarly
   };
 
   function loadSemesterSubjects(sem) {
@@ -279,15 +298,13 @@
       const internalMark = parseInt(rows[i].children[3].children[0].value) || 0;
       const externalMark = parseInt(rows[i].children[4].children[0].value) || 0;
       const totalMark = internalMark + externalMark;
-
-      // Convert 100 mark scale to grade point as per user scale
-      // The scale is out of 100 (50+50)
       const gradePoint = calculateGradePoint(totalMark);
+
       totalCredits += credit;
       totalWeightedPoints += gradePoint * credit;
     }
 
-    if (totalCredits === 0) {
+    if(totalCredits === 0) {
       sgpaResult.textContent = "No subjects to calculate.";
       return;
     }
@@ -312,6 +329,7 @@
     animateFullScreenCircle(() => {
       welcomeScreen.style.display = 'none';
       mainContent.style.display = 'block';
+      loadSemesterSubjects(currentSemester);
     });
   });
 </script>
