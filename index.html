@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SGPA Calculator - Expressive Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-color: #1a1a2e;
+    --session-primary-color: #00f5d4;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-color: #e0e0e0;
+    --text-secondary-color: rgba(224, 224, 224, 0.7);
+  }
+
+  body, html {
+    margin: 0; padding: 0; width: 100%;
+    background-color: var(--bg-color);
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-color);
+    overflow-x: hidden;
+    transition: background-color 0.5s ease;
+  }
+  
+  .background-shapes {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+  }
+  .shape {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--session-primary-color);
+      opacity: 0.15;
+      transition: background-color 0.5s ease;
+  }
+  .shape1 { width: 200px; height: 200px; top: 10%; left: 10%; animation: float 20s infinite alternate; }
+  .shape2 { width: 300px; height: 300px; bottom: 5%; right: 15%; animation: float 25s infinite alternate; }
+  .shape3 { width: 150px; height: 150px; top: 50%; left: 40%; animation: float 18s infinite alternate; }
+
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+  }
+
+  .screen {
+      display: none;
+      min-height: 100vh;
+      width: 100%;
+      box-sizing: border-box;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+  }
+  
+  .screen.is-entering { animation: zoomIn 0.4s ease-in forwards; }
+  .screen.is-exiting { animation: zoomOut 0.4s ease-out forwards; }
+
+  @keyframes zoomIn {
+    from { opacity: 0; transform: scale(1.05); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes zoomOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+  }
+
+  #welcomeScreen {
+    display: flex;
+    cursor: pointer;
+    z-index: 10;
+  }
+  #welcomeScreen h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    z-index: 2;
+    color: #fff;
+    text-shadow: 0 0 10px var(--session-primary-color), 0 0 20px #9b5de5;
+  }
+  .welcome-hint {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #fff;
+      opacity: 0.7;
+      animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+  }
+  #circleCanvas {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  #choiceScreen h2, #semesterSelectionScreen h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-color);
+      text-shadow: 0 0 10px var(--session-primary-color);
+      margin-bottom: 40px;
+      text-align: center;
+  }
+  #choiceGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    width: 100%;
+    max-width: 700px;
+  }
+  .choice-card {
+    background: var(--card-bg);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    animation: float 6s ease-in-out infinite;
+  }
+  .choice-card:hover {
+      animation-play-state: paused;
+      transform: translateY(-10px);
+  }
+  .choice-card .squiggle-svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      stroke: var(--session-primary-color);
+      stroke-width: 3;
+      fill: transparent;
+      stroke-dasharray: 1200;
+      stroke-dashoffset: 1200;
+      transition: stroke-dashoffset 0.6s ease, stroke 0.5s ease;
+  }
+  .choice-card:hover .squiggle-svg {
+      stroke-dashoffset: 0;
+  }
+  .card-header {
+      background-color: rgba(0,0,0,0.1);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+  }
+  .card-header svg {
+      width: 60px;
+      height: 60px;
+      color: var(--session-primary-color);
+      transition: color 0.5s ease;
+  }
+  .card-body {
+      padding: 25px;
+      flex-grow: 1;
+  }
+  .card-body h3 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+      color: var(--text-color);
+  }
+  .card-body p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary-color);
+      line-height: 1.6;
+  }
+  .card-footer {
+      padding: 20px 25px;
+      border-top: 1px solid var(--border-color);
+  }
+  .card-action-btn {
+      background: none;
+      border: none;
+      color: var(--session-primary-color);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.5s ease;
+  }
+
+  #semesterGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto; /* Center the grid container */
+  }
+  .sem-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    color: var(--text-color);
+    padding: 25px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease forwards;
+  }
+  @keyframes fadeInUp {
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+  .sem-btn:hover {
+    background: var(--session-primary-color);
+    color: var(--bg-color);
+  }
+
+  #calculationScreen, #semesterSelectionScreen {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .calc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      width: 100%;
+  }
+  #semesterTitle, #semesterSelectionScreen h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-color);
+      text-shadow: 0 0 8px var(--session-primary-color);
+      text-align: center;
+      flex-grow: 1;
+      margin: 0;
+  }
+  #backButton, #backToChoice {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+  }
+  #backButton:hover, #backToChoice:hover {
+      background: var(--session-primary-color);
+      color: var(--bg-color);
+      transform: scale(1.1);
+  }
+
+  .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 15px;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    min-width: 700px; /* Ensure table has a minimum width for scrolling */
+  }
+  th, td {
+    padding: 14px;
+    text-align: center;
+    font-weight: 400;
+    font-size: 0.9rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+  }
+  th {
+    font-weight: 600;
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.05);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+  tfoot td {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-color);
+      background: rgba(0,0,0, 0.1);
+      border-top: 1px solid var(--border-color);
+  }
+  .subject-cell {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+      gap: 15px;
+      font-weight: 600;
+  }
+  .subject-cell > span {
+      flex-grow: 1;
+  }
+  .subject-name-input {
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      width: 100%;
+      outline: none;
+      padding: 5px;
+      border-radius: 5px;
+  }
+  .subject-name-input:focus {
+      background: rgba(0,0,0,0.2);
+  }
+  input.marks-input, input.credits-input {
+    width: 50px;
+    text-align: center;
+    font-size: 1rem;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    outline: none;
+    color: var(--text-color);
+    background: rgba(0,0,0,0.2);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    -moz-appearance: textfield;
+  }
+  input.marks-input::-webkit-outer-spin-button,
+  input.marks-input::-webkit-inner-spin-button,
+  input.credits-input::-webkit-outer-spin-button,
+  input.credits-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input.marks-input:focus, input.credits-input:focus {
+    border-color: var(--session-primary-color);
+    box-shadow: 0 0 10px var(--session-primary-color);
+  }
+  .external-disabled input {
+      background-color: rgba(0,0,0,0.4) !important;
+      cursor: not-allowed;
+  }
+
+  .toggle-switch {
+    position: relative; display: inline-block;
+    width: 50px; height: 28px; flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.3);
+    transition: .4s; border-radius: 28px;
+  }
+  .slider:before {
+    position: absolute; content: ""; height: 20px; width: 20px;
+    left: 4px; bottom: 4px; background-color: white;
+    transition: .4s; border-radius: 50%;
+  }
+  input:checked + .slider { background-color: var(--session-primary-color); }
+  input:checked + .slider:before { transform: translateX(22px); }
+
+  #addSubjectBtn, #calculateBtn {
+    margin: 20px auto 10px auto;
+    background: var(--session-primary-color);
+    color: var(--bg-color);
+    border: none;
+    padding: 14px 45px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    display: block;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  #addSubjectBtn:hover, #calculateBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px var(--session-primary-color);
+  }
+
+  #sgpaResult {
+    max-width: 900px;
+    margin: 20px auto 40px auto;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-align: center;
+    min-height: 80px;
+    padding: 15px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    gap: 15px;
+  }
+
+  .reveal-capsule {
+    width: 10px;
+    height: 80px;
+    background-color: var(--session-primary-color);
+    border-radius: 5px;
+    animation: stretch-capsule 1.5s ease-in-out forwards;
+  }
+  @keyframes stretch-capsule {
+    0% { transform: scaleY(0); }
+    40% { transform: scaleY(1.2); }
+    60% { transform: scaleY(1); }
+    100% { transform: scale(0); opacity: 0; }
+  }
+  .sgpa-text-reveal {
+    opacity: 0;
+    transform: scale(0.8);
+    animation: reveal-text 0.5s 1.3s ease-out forwards;
+  }
+  @keyframes reveal-text {
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  #downloadBtn {
+      font-size: 0.9rem;
+      padding: 8px 20px;
+      margin-top: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--session-primary-color);
+      opacity: 0;
+      animation: fadeInUp 0.5s 1.8s forwards;
+  }
+
+  @media (max-width: 768px) {
+    #welcomeScreen h1 { font-size: 2rem; }
+    #choiceScreen h2, #semesterSelectionScreen h2 { font-size: 2rem; }
+    #semesterTitle { font-size: 1.5rem; }
+    th, td { padding: 10px 4px; font-size: 0.8rem; }
+    .subject-cell { 
+        text-align: left;
+        font-size: 0.75rem;
+    }
+    .toggle-switch { align-self: center; }
+    input.marks-input { width: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="background-shapes">
+    <div class="shape shape1"></div>
+    <div class="shape shape2"></div>
+    <div class="shape shape3"></div>
+</div>
+
+<div id="welcomeScreen" class="screen" style="display: flex;">
+  <div>
+    <h1>SGPA Calculator</h1>
+    <p class="welcome-hint">Click anywhere to begin</p>
+  </div>
+  <canvas id="circleCanvas" width="200" height="200"></canvas>
+</div>
+
+<div id="choiceScreen" class="screen">
+    <h2>Select</h2>
+    <div id="choiceGrid">
+        <div id="preloadedBtn" class="choice-card">
+            <svg class="squiggle-svg" viewBox="0 0 300 400" preserveAspectRatio="none">
+                <path d="M 10 10 C 50 20, 250 0, 290 10 S 270 40, 290 50 S 250 80, 290 90 L 290 390 C 250 380, 50 400, 10 390 S 30 360, 10 350 S 50 320, 10 310 L 10 10 Z"/>
+            </svg>
+            <div class="card-header">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 18.5H4V15H2v3.5A1.5 1.5 0 0 0 3.5 20H8.5v-1.5zM18.5 20H20V15h-1.5v3.5A1.5 1.5 0 0 1 17 20h-3.5v1.5H17a3 3 0 0 0 3-3V15h-1.5v3.5zM8.5 5.5H4V9H2V5.5A1.5 1.5 0 0 1 3.5 4H8.5V2H5a3 3 0 0 0-3 3v3.5h1.5V5.5zM15.5 4H17a1.5 1.5 0 0 1 1.5 1.5V9h1.5V5.5a3 3 0 0 0-3-3H12v1.5h3.5V4zM9 9h6v6H9z"></path></svg>
+            </div>
+            <div class="card-body">
+                <h3>Preloaded</h3>
+                <p>For VTU ECE students with a fixed curriculum.</p>
+            </div>
+            <div class="card-footer">
+                <button class="card-action-btn">Select &rarr;</button>
+            </div>
+        </div>
+        <div id="customBtn" class="choice-card">
+            <svg class="squiggle-svg" viewBox="0 0 300 400" preserveAspectRatio="none">
+                <path d="M 10 10 C 50 20, 250 0, 290 10 S 270 40, 290 50 S 250 80, 290 90 L 290 390 C 250 380, 50 400, 10 390 S 30 360, 10 350 S 50 320, 10 310 L 10 10 Z"/>
+            </svg>
+             <div class="card-header">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.48 12.04a6.45 6.45 0 0 0-5.44-6.41 6.51 6.51 0 0 0-7.12 2.3 6.51 6.51 0 0 0 2.3 7.12 6.51 6.51 0 0 0 7.12-2.3 6.45 6.45 0 0 0 3.14-3.71zm-6.52 5.16a4.5 4.5 0 1 1 4.5-4.5 4.5 4.5 0 0 1-4.5 4.5z"></path><path d="M19.21 15.33a1 1 0 0 0-1.34.45l-.43.75a1 1 0 0 0 .45 1.34l.75.43a1 1 0 0 0 1.34-.45l.43-.75a1 1 0 0 0-.45-1.34zM4.79 8.67a1 1 0 0 0-1.34.45l-.43.75a1 1 0 0 0 .45 1.34l.75.43a1 1 0 0 0 1.34-.45l.43-.75a1 1 0 0 0-.45-1.34zM12 2a1 1 0 0 0-1 1v1.5a1 1 0 0 0 2 0V3a1 1 0 0 0-1-1zM3 11H1.5a1 1 0 0 0 0 2H3a1 1 0 0 0 0-2zM21 11h-1.5a1 1 0 0 0 0 2H21a1 1 0 0 0 0-2zM12 19a1 1 0 0 0-1 1v1.5a1 1 0 0 0 2 0V20a1 1 0 0 0-1-1z"></path></svg>
+            </div>
+            <div class="card-body">
+                <h3>Custom</h3>
+                <p>Build your own table for any branch or university.</p>
+            </div>
+             <div class="card-footer">
+                <button class="card-action-btn">Create &rarr;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="semesterSelectionScreen" class="screen">
+    <div class="calc-header">
+        <button id="backToChoice" aria-label="Go back to main menu">&larr;</button>
+        <h2>Select Your Semester</h2>
+        <div style="width: 50px;"></div>
+    </div>
+    <div id="semesterGrid">
+        <button class="sem-btn" data-sem="1" style="animation-delay: 0.1s;">Semester 1</button>
+        <button class="sem-btn" data-sem="2" style="animation-delay: 0.2s;">Semester 2</button>
+        <button class="sem-btn" data-sem="3" style="animation-delay: 0.3s;">Semester 3</button>
+        <button class="sem-btn" data-sem="4" style="animation-delay: 0.4s;">Semester 4</button>
+        <button class="sem-btn" data-sem="5" style="animation-delay: 0.5s;">Semester 5</button>
+        <button class="sem-btn" data-sem="6" style="animation-delay: 0.6s;">Semester 6</button>
+        <button class="sem-btn" data-sem="7" style="animation-delay: 0.7s;">Semester 7</button>
+        <button class="sem-btn" data-sem="8" style="animation-delay: 0.8s;">Semester 8</button>
+    </div>
+</div>
+
+<div id="calculationScreen" class="screen">
+    <div class="calc-header">
+        <button id="backButton" aria-label="Go back">&larr;</button>
+        <h2 id="semesterTitle"></h2>
+        <div style="width: 50px;"></div> <!-- Spacer -->
+    </div>
+    <div class="table-wrapper">
+        <table id="subjectTable">
+            <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Credits</th>
+                <th>Internal</th>
+                <th>External</th>
+                <th>Total</th>
+                <th>Grade Pts</th>
+                <th>Credit Pts</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>Total</strong></td>
+                    <td id="totalCreditsCell">0</td>
+                    <td colspan="4"></td>
+                    <td id="totalCreditPointsCell">0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <button id="addSubjectBtn" style="display:none;">+ Add Subject</button>
+    <button id="calculateBtn" style="display:none;">Calculate SGPA</button>
+    <div id="sgpaResult"></div>
+</div>
+
+<script>
+  // --- DOM Element Selection ---
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  const choiceScreen = document.getElementById('choiceScreen');
+  const semesterSelectionScreen = document.getElementById('semesterSelectionScreen');
+  const calculationScreen = document.getElementById('calculationScreen');
+  
+  const preloadedBtn = document.getElementById('preloadedBtn');
+  const customBtn = document.getElementById('customBtn');
+  const semesterGrid = document.getElementById('semesterGrid');
+  const backToChoice = document.getElementById('backToChoice');
+  const backButton = document.getElementById('backButton');
+  
+  const semesterTitle = document.getElementById('semesterTitle');
+  const subjectTable = document.getElementById('subjectTable');
+  const tbody = subjectTable.querySelector('tbody');
+  const addSubjectBtn = document.getElementById('addSubjectBtn');
+  const calculateBtn = document.getElementById('calculateBtn');
+  const sgpaResult = document.getElementById('sgpaResult');
+  const totalCreditsCell = document.getElementById('totalCreditsCell');
+  const totalCreditPointsCell = document.getElementById('totalCreditPointsCell');
+  
+  const canvas = document.getElementById('circleCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // --- Global State ---
+  let currentMode = ''; // 'preloaded' or 'custom'
+  const colors = ['#00f5d4', '#9b5de5', '#f15bb5', '#fee440', '#00bbf9', '#fb5607', '#ff006e', '#8338ec', '#3a86ff', '#ffbe0b', '#fb5607', '#ff006e', '#00f5d4'];
+  let animId;
+
+  const semestersData = {
+    1: [{ code: "BMATE101", name: "MATHEMATICS FOR EES-I", credits: 4 }, { code: "BPHYE102", name: "PHYSICS FOR EEE STREAM", credits: 4 }, { code: "BBEE103", name: "BASIC ELECTRONICS", credits: 3 }, { code: "BENGK106", name: "COMMUNICATIVE ENGLISH", credits: 1 }, { code: "BICOK107", name: "INDIAN CONSTITUTION", credits: 1 }, { code: "BSFHK158", name: "SCIENTIFIC FOUNDATIONS OF HEALTH", credits: 1 }, { code: "BPLCK105B", name: "INTRO TO PYTHON PROGRAMMING", credits: 3 }, { code: "BESCK104D", name: "INTRO TO MECHANICAL ENGG", credits: 3 }],
+    2: [{ code: "BMATE201", name: "MATHEMATICS-II FOR EES", credits: 4 }, { code: "BCHEE202", name: "CHEMISTRY FOR EES", credits: 4 }, { code: "BCEDK203", name: "COMPUTER-AIDED ENGG DRAWING", credits: 3 }, { code: "BPWSK206", name: "PROFESSIONAL WRITING SKILLS", credits: 1 }, { code: "BKSKK258", name: "SAMSKRUTIKA KANNADA", credits: 1 }, { code: "BIDTK258", name: "INNOVATION & DESIGN THINKING", credits: 1 }, { code: "BESCK204A", name: "INTRO TO CIVIL ENGINEERING", credits: 3 }, { code: "BETCK205E", name: "RENEWABLE ENERGY SOURCES", credits: 3 }],
+    3: [{ code: "BMATEC301", name: "AV MATHS-III FOR EC ENGG", credits: 3 }, { code: "BEC302", name: "DIGITAL SYSTEM DESIGN", credits: 4 }, { code: "BEC303", name: "ELECTRONIC PRINCIPLES & CIRCUITS", credits: 4 }, { code: "BEC304", name: "NETWORK ANALYSIS", credits: 3 }, { code: "BECL305", name: "ANALOG & DIGITAL SYSTEMS LAB", credits: 1 }, { code: "BESCK307", name: "SOCIAL CONNECT", credits: 1 }, { code: "BYOK359", name: "YOGA", credits: 0 }, { code: "BEC358A", name: "LABVIEW PROGRAMMING", credits: 1 }, { code: "BEC306C", name: "COMPUTER ORG & ARCHITECTURE", credits: 3 }],
+    4: [{ code: "BEC401", name: "ELECTROMAGNETICS THEORY", credits: 3 }, { code: "BEC402", name: "PRINCIPLES OF COMM SYSTEM", credits: 4 }, { code: "BEC403", name: "CONTROL SYSTEMS", credits: 4 }, { code: "BECL404", name: "COMMUNICATION LAB", credits: 1 }, { code: "BEC405A", name: "MICROCONTROLLERS", credits: 3 }, { code: "BECL456A", name: "MICROCONTROLLERS LAB", credits: 1 }, { code: "BBOK407", name: "BIOLOGY FOR ENGINEERS", credits: 3 }, { code: "BUHK408", name: "UNIVERSAL HUMAN VALUES", credits: 1 }, { code: "BYOK459", name: "YOGA", credits: 0 }],
+    5: [{ code: "BEC501", name: "INFORMATION THEORY & CODING", credits: 3 }, { code: "BEC502", name: "DIGITAL SIGNAL PROCESSING", credits: 4 }, { code: "BEC503", name: "DIGITAL COMMUNICATION", credits: 4 }, { code: "BECL504", name: "DIGITAL COMMUNICATION LAB", credits: 1 }, { code: "BEC586", name: "MINI PROJECT", credits: 1 }, { code: "BRMK557", name: "RESEARCH METHODOLOGY & IPR", credits: 3 }, { code: "BESK508", name: "ENVIRONMENTAL STUDIES", credits: 2 }, { code: "BNSK559", name: "NATIONAL SERVICE SCHEME", credits: 1 }, { code: "BEC515B", name: "DSP FOR AI & ML", credits: 3 }],
+    6: [{ code: "BEC601", name: "EMBEDDED SYSTEM DESIGN", credits: 4 }, { code: "BEC602", name: "VLSI DESIGN AND TESTING", credits: 4 }, { code: "BEC685", name: "PROJECT PHASE 1", credits: 2 }, { code: "BECL606", name: "VLSI DESIGN AND TESTING LAB", credits: 1 }, { code: "BNSK658", name: "NATIONAL SERVICE SCHEME", credits: 0 }, { code: "BIKS609", name: "INDIAN KNOWLEDGE SYSTEM", credits: 0 }, { code: "BCS654A", name: "INTRODUCTION TO DATA STRUCTURES", credits: 3 }, { code: "BEC613B", name: "DATA SECURITY", credits: 3 }, { code: "BECL657D", name: "PYTHON FOR ML APPLICATIONS", credits: 1 }],
+    7: [],
+    8: []
+  };
+
+  // --- Functions ---
+  
+  function hexToHsl(H) {
+    let r = 0, g = 0, b = 0;
+    if (H.length == 4) {
+      r = "0x" + H[1] + H[1];
+      g = "0x" + H[2] + H[2];
+      b = "0x" + H[3] + H[3];
+    } else if (H.length == 7) {
+      r = "0x" + H[1] + H[2];
+      g = "0x" + H[3] + H[4];
+      b = "0x" + H[5] + H[6];
+    }
+    r /= 255; g /= 255; b /= 255;
+    let cmin = Math.min(r,g,b), cmax = Math.max(r,g,b), delta = cmax - cmin, h = 0, s = 0, l = 0;
+    if (delta == 0) h = 0;
+    else if (cmax == r) h = ((g - b) / delta) % 6;
+    else if (cmax == g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+    l = (cmax + cmin) / 2;
+    s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+    s = +(s * 100).toFixed(1);
+    l = +(l * 100).toFixed(1);
+    return [h, s, l];
+  }
+
+  function generatePalette(baseColor) {
+      const [h, s, l] = hexToHsl(baseColor);
+      return {
+          '--session-primary-color': `hsl(${h}, ${s}%, ${l}%)`,
+          '--bg-color': `hsl(${h}, ${s-10 > 0 ? s-10 : 0}%, 10%)`,
+          '--card-bg': `hsla(${h}, ${s-10 > 0 ? s-10 : 0}%, 15%, 0.5)`,
+          '--border-color': `hsla(${h}, ${s-10 > 0 ? s-10 : 0}%, 100%, 0.1)`,
+          '--text-color': `hsl(${h}, 15%, 90%)`,
+          '--text-secondary-color': `hsla(${h}, 10%, 85%, 0.7)`,
+      };
+  }
+
+  function applyTheme(color) {
+      const palette = generatePalette(color);
+      for (const [key, value] of Object.entries(palette)) {
+          document.documentElement.style.setProperty(key, value);
+      }
+  }
+
+  function switchScreen(screenToHide, screenToShow) {
+      screenToHide.classList.add('is-exiting');
+      
+      screenToShow.style.display = 'flex';
+      screenToShow.classList.add('is-entering');
+
+      setTimeout(() => {
+          screenToHide.style.display = 'none';
+          screenToHide.classList.remove('is-exiting');
+          screenToShow.classList.remove('is-entering');
+      }, 400);
+  }
+
+  function animateFullScreenCircle(callback) {
+    let radius = 0;
+    let maxRadius = Math.max(window.innerWidth, window.innerHeight) * 1.5;
+    let color = colors[Math.floor(Math.random() * colors.length)];
+    applyTheme(color);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const animCenterX = canvas.width / 2;
+    const animCenterY = canvas.height / 2;
+
+    function draw() {
+      ctx.globalAlpha = 0.8;
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.arc(animCenterX, animCenterY, radius, 0, Math.PI * 2);
+      ctx.fill();
+      radius += 25;
+      if (radius > maxRadius) {
+        cancelAnimationFrame(animId);
+        if (callback) callback();
+        return;
+      }
+      animId = requestAnimationFrame(draw);
+    }
+    animId = requestAnimationFrame(draw);
+  }
+  
+  function addCustomRow() {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="subject-cell">
+          <input type="text" placeholder="Subject Name" class="subject-name-input">
+           <label class="toggle-switch">
+            <input class="external-toggle" type="checkbox" checked>
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td><input class="credits-input" type="number" min="0" value="0"></td>
+        <td><input class="marks-input internal-marks" type="number" min="0" max="50" value="0"></td>
+        <td class="external-cell"><input class="marks-input external-marks" type="number" min="0" max="50" value="0"></td>
+        <td class="total-marks-cell">0</td>
+        <td class="grade-points-cell">0</td>
+        <td class="credit-points-cell">0</td>
+      `;
+      tbody.appendChild(row);
+  }
+
+  function loadSemesterSubjects(sem) {
+    tbody.innerHTML = '';
+    sgpaResult.innerHTML = '';
+    const subjects = semestersData[sem];
+    
+    if (!subjects || subjects.length === 0) {
+      subjectTable.style.display = 'none';
+      calculateBtn.style.display = 'none';
+      sgpaResult.textContent = 'Subjects for this semester are not available yet.';
+      return;
+    }
+
+    subjects.forEach(subj => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="subject-cell">
+          <span>${subj.name} (${subj.code})</span>
+          <label class="toggle-switch">
+            <input class="external-toggle" type="checkbox" checked>
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td class="credits-cell">${subj.credits}</td>
+        <td><input class="marks-input internal-marks" type="number" min="0" max="50" value="0"></td>
+        <td class="external-cell"><input class="marks-input external-marks" type="number" min="0" max="50" value="0"></td>
+        <td class="total-marks-cell">0</td>
+        <td class="grade-points-cell">0</td>
+        <td class="credit-points-cell">0</td>
+      `;
+      tbody.appendChild(row);
+      updateRowCalculations(row);
+    });
+    updateTableFooter();
+    subjectTable.style.display = 'table';
+    calculateBtn.style.display = 'block';
+  }
+
+  function marksToGradePoint(marks) {
+    if (marks > 100) marks = 100;
+    if (marks >= 90) return 10;
+    if (marks >= 80) return 9;
+    if (marks >= 70) return 8;
+    if (marks >= 60) return 7;
+    if (marks >= 50) return 6;
+    if (marks >= 40) return 5;
+    return 0;
+  }
+
+  function updateRowCalculations(row) {
+      const hasExternal = row.querySelector('.external-toggle')?.checked ?? true;
+      const internalMarks = Number(row.querySelector('.internal-marks').value);
+      const externalMarks = Number(row.querySelector('.external-marks').value);
+      
+      let credits;
+      const creditsCell = row.querySelector('.credits-cell');
+      const creditsInput = row.querySelector('.credits-input');
+      if(creditsInput) {
+          credits = Number(creditsInput.value);
+      } else {
+          credits = Number(creditsCell.textContent);
+      }
+      
+      const totalCell = row.querySelector('.total-marks-cell');
+      const gradePointsCell = row.querySelector('.grade-points-cell');
+      const creditPointsCell = row.querySelector('.credit-points-cell');
+      
+      let totalMarks = 0;
+      if (hasExternal) {
+          totalMarks = internalMarks + externalMarks;
+      } else {
+          totalMarks = internalMarks;
+      }
+      
+      const gradePoint = marksToGradePoint(totalMarks);
+      const creditPoints = gradePoint * credits;
+
+      totalCell.textContent = totalMarks;
+      gradePointsCell.textContent = gradePoint;
+      creditPointsCell.textContent = creditPoints;
+  }
+
+  function updateTableFooter() {
+      let totalCredits = 0;
+      let totalCreditPoints = 0;
+      const rows = tbody.querySelectorAll('tr');
+
+      rows.forEach(row => {
+          const creditsCell = row.querySelector('.credits-cell');
+          const creditsInput = row.querySelector('.credits-input');
+          if(creditsInput) {
+              totalCredits += Number(creditsInput.value);
+          } else {
+              totalCredits += Number(creditsCell.textContent);
+          }
+          totalCreditPoints += Number(row.querySelector('.credit-points-cell').textContent);
+      });
+
+      totalCreditsCell.textContent = totalCredits;
+      totalCreditPointsCell.textContent = totalCreditPoints;
+  }
+
+  function generateReportHTML(sgpa) {
+      const tableRows = [];
+      tbody.querySelectorAll('tr').forEach(row => {
+          const subjectNameCell = row.querySelector('.subject-cell span')?.textContent || row.querySelector('.subject-name-input')?.value || 'N/A';
+          const credits = row.querySelector('.credits-cell')?.textContent || row.querySelector('.credits-input')?.value || '0';
+          const internal = row.querySelector('.internal-marks').value;
+          const external = row.querySelector('.external-marks').value;
+          const total = row.querySelector('.total-marks-cell').textContent;
+          const gradePts = row.querySelector('.grade-points-cell').textContent;
+          const creditPts = row.querySelector('.credit-points-cell').textContent;
+
+          tableRows.push(`
+              <tr>
+                  <td>${subjectNameCell}</td>
+                  <td>${credits}</td>
+                  <td>${internal}</td>
+                  <td>${external}</td>
+                  <td>${total}</td>
+                  <td>${gradePts}</td>
+                  <td>${creditPts}</td>
+              </tr>
+          `);
+      });
+      
+      const totalCredits = totalCreditsCell.textContent;
+      const totalCreditPoints = totalCreditPointsCell.textContent;
+
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--session-primary-color');
+      const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color');
+
+      return `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <title>SGPA Report</title>
+              <style>
+                  body { font-family: sans-serif; background-color: ${bgColor}; color: ${textColor}; padding: 20px; }
+                  h1, h2 { text-align: center; color: ${primaryColor}; }
+                  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                  th, td { border: 1px solid ${primaryColor}; padding: 8px; text-align: center; }
+                  th { background-color: rgba(0,0,0,0.2); }
+                  tfoot { font-weight: bold; }
+              </style>
+          </head>
+          <body>
+              <h1>SGPA Report Card</h1>
+              <h2>${semesterTitle.textContent}</h2>
+              <table>
+                  <thead>
+                      <tr>
+                          <th>Subject</th><th>Credits</th><th>Internal</th><th>External</th>
+                          <th>Total</th><th>Grade Pts</th><th>Credit Pts</th>
+                      </tr>
+                  </thead>
+                  <tbody>${tableRows.join('')}</tbody>
+                  <tfoot>
+                      <tr>
+                          <td>Total</td><td>${totalCredits}</td><td colspan="4"></td><td>${totalCreditPoints}</td>
+                      </tr>
+                  </tfoot>
+              </table>
+              <h2>Final SGPA: ${sgpa}</h2>
+          </body>
+          </html>
+      `;
+  }
+
+  // --- Event Listeners ---
+
+  welcomeScreen.addEventListener('click', () => {
+    welcomeScreen.style.pointerEvents = 'none'; 
+    animateFullScreenCircle(() => {
+      switchScreen(welcomeScreen, choiceScreen);
+    });
+  });
+  
+  preloadedBtn.addEventListener('click', () => {
+      currentMode = 'preloaded';
+      switchScreen(choiceScreen, semesterSelectionScreen);
+  });
+  
+  customBtn.addEventListener('click', () => {
+      currentMode = 'custom';
+      switchScreen(choiceScreen, calculationScreen);
+      semesterTitle.textContent = 'Custom Calculator';
+      tbody.innerHTML = ''; // Clear table
+      addCustomRow(); // Add one row to start
+      updateTableFooter();
+      addSubjectBtn.style.display = 'block';
+      calculateBtn.style.display = 'block';
+      subjectTable.style.display = 'table';
+  });
+
+  addSubjectBtn.addEventListener('click', addCustomRow);
+
+  semesterGrid.addEventListener('click', function(e) {
+      if(e.target.classList.contains('sem-btn')) {
+          const sem = e.target.dataset.sem;
+          switchScreen(semesterSelectionScreen, calculationScreen);
+          semesterTitle.textContent = `SEMESTER ${sem}`;
+          addSubjectBtn.style.display = 'none';
+          loadSemesterSubjects(sem);
+      }
+  });
+
+  backButton.addEventListener('click', () => {
+      if (currentMode === 'preloaded') {
+          switchScreen(calculationScreen, semesterSelectionScreen);
+      } else {
+          switchScreen(calculationScreen, choiceScreen);
+      }
+  });
+  
+  if (backToChoice) {
+    backToChoice.addEventListener('click', () => switchScreen(semesterSelectionScreen, choiceScreen));
+  }
+
+  tbody.addEventListener('input', function(e) {
+      if (e.target.classList.contains('marks-input') || e.target.classList.contains('credits-input')) {
+          const input = e.target;
+          if(input.max) {
+             const max = parseInt(input.max);
+             if (Number(input.value) > max) {
+                 input.value = max;
+             }
+          }
+          
+          const row = e.target.closest('tr');
+          updateRowCalculations(row);
+          updateTableFooter();
+      }
+  });
+
+  tbody.addEventListener('change', function(e) {
+    if (e.target.classList.contains('external-toggle')) {
+      const row = e.target.closest('tr');
+      const internalInput = row.querySelector('.internal-marks');
+      const externalCell = row.querySelector('.external-cell');
+      const externalInput = row.querySelector('.external-marks');
+
+      if (e.target.checked) {
+        internalInput.max = 50;
+        if (Number(internalInput.value) > 50) internalInput.value = 50;
+        externalInput.disabled = false;
+        externalCell.classList.remove('external-disabled');
+      } else {
+        internalInput.max = 100;
+        externalInput.disabled = true;
+        externalInput.value = 0;
+        externalCell.classList.add('external-disabled');
+      }
+      updateRowCalculations(row);
+      updateTableFooter();
+    }
+  });
+
+  calculateBtn.addEventListener('click', () => {
+    let error = null;
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => {
+        if (error) return;
+        const hasExternal = row.querySelector('.external-toggle')?.checked ?? true;
+        const internalMarks = Number(row.querySelector('.internal-marks').value);
+        const externalMarks = Number(row.querySelector('.external-marks').value);
+
+        if (hasExternal) {
+            if (internalMarks < 0 || internalMarks > 50 || externalMarks < 0 || externalMarks > 50) {
+                error = 'For subjects with externals, marks must be between 0 and 50.';
+            }
+        } else {
+            if (internalMarks < 0 || internalMarks > 100) {
+                error = 'For internal-only subjects, marks must be between 0 and 100.';
+            }
+        }
+    });
+
+    sgpaResult.innerHTML = '';
+
+    if (error) {
+        sgpaResult.textContent = error;
+        return;
+    }
+    
+    const capsule = document.createElement('div');
+    capsule.className = 'reveal-capsule';
+    sgpaResult.appendChild(capsule);
+
+    setTimeout(() => {
+        const sgpaText = document.createElement('div');
+        sgpaText.className = 'sgpa-text-reveal';
+        const totalCredits = Number(totalCreditsCell.textContent);
+        const totalCreditPoints = Number(totalCreditPointsCell.textContent);
+        let sgpa = 'N/A';
+        if (totalCredits !== 0) {
+            sgpa = (totalCreditPoints / totalCredits).toFixed(2);
+        }
+        sgpaText.textContent = sgpa;
+        
+        const downloadBtn = document.createElement('button');
+        downloadBtn.textContent = 'Download Report';
+        downloadBtn.id = 'downloadBtn';
+        downloadBtn.className = 'sem-btn'; // Re-use styling
+        downloadBtn.onclick = () => {
+            const reportHtml = generateReportHTML(sgpa);
+            const blob = new Blob([reportHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SGPA_Report_${semesterTitle.textContent.replace(' ', '_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        sgpaResult.innerHTML = '';
+        sgpaResult.appendChild(sgpaText);
+        sgpaResult.appendChild(downloadBtn);
+    }, 1500);
+  });
+
+</script>
+
+</body>
+</html>
